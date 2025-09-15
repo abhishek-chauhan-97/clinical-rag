@@ -1,0 +1,7 @@
+gradio
+sentence-transformers
+huggingface-hub
+transformers
+numpy
+requests
+tqdm

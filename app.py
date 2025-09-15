@@ -65,15 +65,25 @@ def answer(query, top_k=3):
     prov = "\n\n---\nSources used:\n" + "\n".join([f"{r['id']} (score={r['score']:.3f})" for r in retrieved])
     return out + prov
 
-# -------- Gradio UI
-with gr.Blocks() as demo:
-    gr.Markdown("# Clinical RAG Chat — Prototype\n**Disclaimer:** Prototype only. Not for clinical use.")
-    with gr.Row():
-        inp = gr.Textbox(label="Question", placeholder="Ask a clinical question (example: 'adult paracetamol dosing?')")
-        topk = gr.Slider(minimum=1, maximum=5, step=1, value=3, label="Retriever: top K")
-    out = gr.Textbox(label="Answer")
-    btn = gr.Button("Ask")
-    btn.click(fn=answer, inputs=[inp, topk], outputs=out)
+# -------- Streamlit UI
+import streamlit as st
 
-if __name__ == '__main__':
-    demo.launch()
+st.set_page_config(page_title="Clinical Key AI Prototype", layout="wide")
+
+st.title("🧠 Clinical Key AI Prototype")
+st.write("**Disclaimer:** Prototype only. Not for clinical use.")
+
+# Input fields
+user_query = st.text_input("Enter your medical question:")
+top_k = st.slider("Retriever: top K", min_value=1, max_value=5, value=3)
+
+# Run button
+if st.button("Search"):
+    if user_query.strip():
+        with st.spinner("Running retrieval + generation..."):
+            result = answer(user_query, top_k=top_k)
+        st.success("Answer generated successfully!")
+        st.write(result)
+    else:
+        st.warning("Please enter a question.")
+

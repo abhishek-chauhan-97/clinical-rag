@@ -2,6 +2,9 @@
 import os, json, numpy as np, requests
 from sentence_transformers import SentenceTransformer
 import gradio as gr
+import os
+os.makedirs(".streamlit", exist_ok=True)
+
 
 # -------- load docs
 def load_docs(path="data/docs.jsonl"):

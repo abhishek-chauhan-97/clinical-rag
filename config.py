@@ -9,9 +9,10 @@ if not HF_TOKEN:
 
 # Default models
 AVAILABLE_MODELS = [
-    "google/flan-t5-small",
-    "google/flan-t5-base",
-    "google/flan-t5-large"
+    "google/flan-t5-base",   # ✅ works on free tier
+    "google/flan-t5-large",  # ✅ free tier
+    "google/flan-t5-xl"      # ✅ free tier
+    # DO NOT add Mistral, Llama-2, or Claude here — they require paid endpoints.
 ]
 
 # Default sources

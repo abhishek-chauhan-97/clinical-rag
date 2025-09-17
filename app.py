@@ -3,6 +3,8 @@ from retriever import retrieve_top_k, DOCS
 from generator import generate_answer
 from ui import sidebar_settings
 import traceback
+import logging
+import sys
 
 st.set_page_config(page_title="Clinical GAI Prototype", layout="wide")
 st.title("🧠 Clinical GAI Prototype")
@@ -33,3 +35,16 @@ if st.button("Search"):
         except Exception as e:
             st.error(f"❌ Exception: {e}")
             st.text(traceback.format_exc())
+
+# ✅ Always log to both console and a file
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler("app_debug.log", mode="w")
+    ]
+)
+
+logger = logging.getLogger(__name__)
+logger.info("🚀 Logging initialized. If you don't see this line, logging is broken.")

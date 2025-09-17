@@ -2,6 +2,7 @@ import requests
 from config import HF_TOKEN
 from retriever import retrieve_top_k
 import logging
+
 logger = logging.getLogger(__name__)
 
 def hf_generate(prompt, model="google/flan-t5-small", max_tokens=256):
@@ -10,14 +11,18 @@ def hf_generate(prompt, model="google/flan-t5-small", max_tokens=256):
     payload = {"inputs": prompt, "parameters": {"max_new_tokens": max_tokens}}
 
     try:
+        logger.info(f"🔗 Calling Hugging Face model: {model}")
         r = requests.post(url, headers=headers, json=payload, timeout=60)
         if r.status_code != 200:
+            logger.error(f"HF API error {r.status_code}: {r.text}")
             return {"error": f"HF API error {r.status_code}: {r.text}"}
         data = r.json()
+        logger.debug(f"HF raw response: {data}")
         if isinstance(data, list) and "generated_text" in data[0]:
             return {"text": data[0]["generated_text"]}
         return {"text": str(data)}
     except Exception as e:
+        logger.exception("❌ Hugging Face API call failed")
         return {"error": str(e)}
 
 def generate_answer(query, top_k, model_choice):
@@ -39,23 +44,3 @@ def generate_answer(query, top_k, model_choice):
         return None, logs, retrieved
     logs.append("Model responded successfully.")
     return gen["text"].strip(), logs, retrieved
-
-
-
-def generate_answer(query, top_k, model_choice):
-    logs = []
-    refs = []
-
-    try:
-        logger.info(f"🔍 Generating answer | Model={model_choice} | Query='{query}'")
-        # actual model call here
-        response = llm(query)
-        logger.debug(f"Raw response: {response}")
-        logs.append("Model call succeeded.")
-        return response, logs, refs
-    except Exception as e:
-        logger.exception("❌ Model call failed")
-        logs.append(f"Exception: {str(e)}")
-        return None, logs, refs
-
-

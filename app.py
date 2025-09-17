@@ -49,11 +49,4 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 logger.info("🚀 Logging initialized. If you don't see this line, logging is broken.")
 
-try:
-    logger.info("🔍 Running model...")
-    response = llm(question)   # or however you're calling
-    logger.debug(f"Raw response: {response}")
-except Exception as e:
-    logger.exception("❌ Model call failed")
-    response = "⚠️ Error: model call failed. See logs."
 

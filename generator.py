@@ -1,6 +1,8 @@
 import requests
 from config import HF_TOKEN
 from retriever import retrieve_top_k
+import logging
+logger = logging.getLogger(__name__)
 
 def hf_generate(prompt, model="google/flan-t5-small", max_tokens=256):
     url = f"https://api-inference.huggingface.co/models/{model}"
@@ -38,11 +40,22 @@ def generate_answer(query, top_k, model_choice):
     logs.append("Model responded successfully.")
     return gen["text"].strip(), logs, retrieved
 
-try:
-    logger.info("🔍 Running model...")
-    response = llm(question)   # ❌ this breaks, llm + question not defined here
-    logger.debug(f"Raw response: {response}")
-except Exception as e:
-    logger.exception("❌ Model call failed")
-    response = "⚠️ Error: model call failed. See logs."
+
+
+def generate_answer(query, top_k, model_choice):
+    logs = []
+    refs = []
+
+    try:
+        logger.info(f"🔍 Generating answer | Model={model_choice} | Query='{query}'")
+        # actual model call here
+        response = llm(query)
+        logger.debug(f"Raw response: {response}")
+        logs.append("Model call succeeded.")
+        return response, logs, refs
+    except Exception as e:
+        logger.exception("❌ Model call failed")
+        logs.append(f"Exception: {str(e)}")
+        return None, logs, refs
+
 

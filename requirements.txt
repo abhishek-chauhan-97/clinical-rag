@@ -1,9 +1,4 @@
-gradio
+streamlit==1.49.1
 sentence-transformers
-huggingface-hub
-transformers
 numpy
 requests
-tqdm
-streamlit
-

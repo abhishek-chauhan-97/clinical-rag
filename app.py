@@ -6,14 +6,27 @@ import traceback
 import logging
 import sys
 
+# ---- Logging ----
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler("app_debug.log", mode="w", encoding="utf-8")
+    ]
+)
+logger = logging.getLogger(__name__)
+logger.info("🚀 Logging initialized. If you don't see this line, logging is broken.")
+
+# ---- Streamlit Config ----
 st.set_page_config(page_title="Clinical GAI Prototype", layout="wide")
 st.title("🧠 Clinical GAI Prototype")
 st.caption("Disclaimer: Prototype only. Not for clinical use.")
 
-# Sidebar
+# ---- Sidebar ----
 top_k, model_choice, source_choice = sidebar_settings()
 
-# Input
+# ---- Input ----
 user_query = st.text_input("Enter your medical question:")
 
 if st.button("Search"):
@@ -32,21 +45,9 @@ if st.button("Search"):
                     st.text(l)
             else:
                 st.error("❌ No answer generated. See logs below.")
+                for l in logs:
+                    st.text(l)
         except Exception as e:
             st.error(f"❌ Exception: {e}")
             st.text(traceback.format_exc())
-
-# ✅ Always log to both console and a file
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler("app_debug.log", mode="w")
-    ]
-)
-
-logger = logging.getLogger(__name__)
-logger.info("🚀 Logging initialized. If you don't see this line, logging is broken.")
-
-
+            logger.exception("Unhandled exception in app")

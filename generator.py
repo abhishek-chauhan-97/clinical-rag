@@ -71,3 +71,21 @@ def generate_answer(query, top_k, model_choice):
 
     logs.append("Model responded successfully.")
     return gen["text"].strip(), logs, retrieved
+
+# generator.py (add)
+import requests, os, logging
+logger = logging.getLogger(__name__)
+
+def check_model_availability(model):
+    """Return (status_code, text) from HF inference GET. Useful for debugging 404/401."""
+    token = os.environ.get("HF_TOKEN")
+    headers = {"Authorization": f"Bearer {token}"} if token else {}
+    url = f"https://api-inference.huggingface.co/models/{model}"
+    try:
+        r = requests.get(url, headers=headers, timeout=15)
+        logger.info(f"Model check {model} -> {r.status_code}")
+        return r.status_code, r.text[:2000]
+    except Exception as e:
+        logger.exception("Model availability check failed")
+        return None, str(e)
+

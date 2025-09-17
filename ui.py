@@ -21,3 +21,18 @@ def sidebar_settings():
     logger.info(f"Sidebar | source_choice set to {source_choice}")
 
     return top_k, model_choice, source_choice
+
+# ui.py (add near sidebar_settings or where appropriate)
+from generator import check_model_availability
+
+# After user selects model in sidebar_settings, optionally show:
+if st.sidebar.button("Check model availability"):
+    code, body = check_model_availability(model_choice)
+    if code is None:
+        st.sidebar.error("Check failed: see logs.")
+    elif code == 200:
+        st.sidebar.success(f"Model reachable (HTTP 200).")
+    else:
+        st.sidebar.warning(f"Model check: HTTP {code}")
+        st.sidebar.text(body)
+

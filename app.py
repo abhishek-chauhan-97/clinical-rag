@@ -1,9 +1,10 @@
 # app.py — simple RAG prototype (Gradio + HF Inference)
+import os
+os.makedirs(".streamlit", exist_ok=True)
 import os, json, numpy as np, requests
 from sentence_transformers import SentenceTransformer
 import gradio as gr
-import os
-os.makedirs(".streamlit", exist_ok=True)
+
 
 
 # -------- load docs

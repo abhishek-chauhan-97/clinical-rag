@@ -37,3 +37,12 @@ def generate_answer(query, top_k, model_choice):
         return None, logs, retrieved
     logs.append("Model responded successfully.")
     return gen["text"].strip(), logs, retrieved
+
+try:
+    logger.info("🔍 Running model...")
+    response = llm(question)   # ❌ this breaks, llm + question not defined here
+    logger.debug(f"Raw response: {response}")
+except Exception as e:
+    logger.exception("❌ Model call failed")
+    response = "⚠️ Error: model call failed. See logs."
+

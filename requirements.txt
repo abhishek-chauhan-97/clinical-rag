@@ -2,3 +2,5 @@ streamlit==1.49.1
 sentence-transformers
 numpy
 requests
+transformers
+torch    # CPU build; large download, increase build time

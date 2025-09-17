@@ -5,7 +5,14 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def hf_generate(prompt, model="google/flan-t5-small", max_tokens=256):
+# ✅ Step 1: Define models that are actually supported by HF Inference API (free tier)
+AVAILABLE_MODELS = [
+    "google/flan-t5-base",
+    "google/flan-t5-large",
+    "google/flan-t5-xl"
+]
+
+def hf_generate(prompt, model="google/flan-t5-base", max_tokens=256):
     """
     Calls Hugging Face inference API.
     Returns dict: { "text": "..."} or { "error": "..." }
@@ -31,6 +38,9 @@ def fallback_answer(query, retrieved):
     """
     Generates a dummy offline fallback answer using retrieved docs.
     """
+    if not retrieved:
+        return f"⚠️ Offline fallback: No docs retrieved for '{query}'."
+
     context_texts = [r['text'] for r in retrieved]
     answer = "⚠️ Offline fallback: Based on retrieved docs:\n\n"
     for i, t in enumerate(context_texts, start=1):

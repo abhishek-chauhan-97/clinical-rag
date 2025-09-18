@@ -1,18 +1,16 @@
 import os
 import streamlit as st
 
-# Hugging Face Token
-HF_TOKEN = os.getenv("HF_TOKEN")
-if not HF_TOKEN:
-    st.error("❌ HF_TOKEN not found. Please add it in Hugging Face Secrets.")
+# Gemini Token
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    st.error("❌ GEMINI_API_KEY not found. Please add it in your GitHub/Streamlit secrets.")
     st.stop()
 
-# Default models
+# Default models (Gemini only)
 AVAILABLE_MODELS = [
-    "google/flan-t5-base",   # ✅ works on free tier
-    "google/flan-t5-large",  # ✅ free tier
-    "google/flan-t5-xl"      # ✅ free tier
-    # DO NOT add Mistral, Llama-2, or Claude here — they require paid endpoints.
+    "gemini-1.5-flash",
+    "gemini-1.5-pro"
 ]
 
 # Default sources

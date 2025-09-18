@@ -1,7 +1,9 @@
+# retriever.py (lightweight TF-IDF version)
 import json
-import numpy as np
-from sentence_transformers import SentenceTransformer
 import logging
+import os
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 logger = logging.getLogger(__name__)
 
@@ -27,20 +29,34 @@ DOCS = load_docs()
 IDS = [d["id"] for d in DOCS]
 TEXTS = [d["text"] for d in DOCS]
 
-# ---- Embeddings ----
-logger.info("🔧 Loading embedding model: all-MiniLM-L6-v2")
-EMBED_MODEL = SentenceTransformer("all-MiniLM-L6-v2")
-DOC_EMBS = EMBED_MODEL.encode(TEXTS, convert_to_numpy=True)
-logger.info(f"✅ Precomputed embeddings for {len(TEXTS)} documents")
+# ---- TF-IDF Embeddings ----
+logger.info("🔧 Building TF-IDF vectorizer")
+if TEXTS:
+    VECTORIZER = TfidfVectorizer(stop_words="english")
+    DOC_EMBS = VECTORIZER.fit_transform(TEXTS)
+    logger.info(f"✅ Precomputed embeddings for {len(TEXTS)} documents")
+else:
+    VECTORIZER, DOC_EMBS = None, None
+    logger.warning("⚠️ No documents to index")
 
+# ---- Retrieval ----
 def retrieve_top_k(query, k=3):
     logger.info(f"🔍 Retrieving top {k} docs for query='{query}'")
-    q_emb = EMBED_MODEL.encode([query], convert_to_numpy=True)[0]
-    sims = np.dot(DOC_EMBS, q_emb) / (np.linalg.norm(DOC_EMBS, axis=1) * np.linalg.norm(q_emb) + 1e-10)
-    idx = np.argsort(-sims)[:k]
+
+    if not DOCS or DOC_EMBS is None:
+        logger.warning("⚠️ No documents available for retrieval")
+        return []
+
+    q_vec = VECTORIZER.transform([query])
+    sims = cosine_similarity(q_vec, DOC_EMBS)[0]
+
+    # rank by similarity
+    idx = sims.argsort()[::-1][:k]
+
     results = [
         {"id": IDS[i], "text": TEXTS[i], "score": float(sims[i]), "url": DOCS[i].get("url", "local")}
         for i in idx
     ]
+
     logger.debug(f"Retrieved docs: {[r['id'] for r in results]}")
     return results

@@ -2,12 +2,14 @@ import os
 import streamlit as st
 
 # Gemini Token
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+raw_key = os.getenv("GEMINI_API_KEY") or st.secrets.get("GEMINI_API_KEY", "")
+GEMINI_API_KEY = raw_key.strip() if raw_key else None
+
 if not GEMINI_API_KEY:
-    st.error("❌ GEMINI_API_KEY not found. Please add it in your GitHub/Streamlit secrets.")
+    st.error("❌ GEMINI_API_KEY not found. Please add it in GitHub/Streamlit secrets.")
     st.stop()
 
-# Default models (Gemini only)
+# Default models
 AVAILABLE_MODELS = [
     "gemini-1.5-flash",
     "gemini-1.5-pro"

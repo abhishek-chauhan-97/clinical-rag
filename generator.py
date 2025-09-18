@@ -2,7 +2,6 @@
 import logging
 from retriever import retrieve_top_k
 from config import GEMINI_API_KEY
-
 import google.generativeai as genai
 
 genai.configure(api_key=GEMINI_API_KEY)
@@ -10,9 +9,7 @@ logger = logging.getLogger(__name__)
 
 # -------- Gemini Inference
 def gemini_generate(prompt: str, model: str = "gemini-1.5-flash") -> dict:
-    """
-    Calls Gemini API with the given prompt and returns text output.
-    """
+    """Calls Gemini API with the given prompt and returns text output."""
     try:
         model_obj = genai.GenerativeModel(model)
         response = model_obj.generate_content(prompt)
@@ -25,9 +22,7 @@ def gemini_generate(prompt: str, model: str = "gemini-1.5-flash") -> dict:
 
 # -------- Offline text-only fallback
 def fallback_answer(query: str, retrieved: list) -> str:
-    """
-    Lightweight fallback: surfaces retrieved chunks if Gemini call fails.
-    """
+    """Lightweight fallback: surfaces retrieved chunks if Gemini call fails."""
     if not retrieved:
         return f"⚠️ Offline fallback: No docs retrieved for '{query}'."
     context_texts = [r["text"] for r in retrieved]
@@ -38,8 +33,7 @@ def fallback_answer(query: str, retrieved: list) -> str:
 
 # -------- Orchestration
 def generate_answer(query: str, top_k: int, model_choice: str = "gemini-1.5-flash"):
-    """
-    Main entry: retrieves top-k docs, builds prompt, queries Gemini, 
+    """Main entry: retrieves top-k docs, builds prompt, queries Gemini,
     and falls back to retrieved text if needed.
     """
     logs = []

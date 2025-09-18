@@ -4,3 +4,5 @@ numpy
 requests
 transformers
 torch    # CPU build; large download, increase build time
+google-generativeai
+

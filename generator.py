@@ -3,6 +3,7 @@ import logging
 from retriever import retrieve_top_k
 from config import GEMINI_API_KEY
 import google.generativeai as genai
+from config import GEMINI_API_KEY
 
 genai.configure(api_key=GEMINI_API_KEY)
 logger = logging.getLogger(__name__)
@@ -61,3 +62,8 @@ def generate_answer(query: str, top_k: int, model_choice: str = "gemini-1.5-flas
 
     logs.append("Model responded successfully (Gemini).")
     return gen["text"].strip(), logs, retrieved
+
+import logging
+logger = logging.getLogger(__name__)
+logger.info(f"🔑 Gemini API key loaded (length={len(GEMINI_API_KEY)})")
+

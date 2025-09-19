@@ -1,12 +1,14 @@
-# retriever.py (ultra-light, no external deps)
+# retriever.py
 import json
 import logging
 import math
+import requests
 from collections import Counter
+from config import PUBMED_API_KEY
 
 logger = logging.getLogger(__name__)
 
-# ---- Load Docs ----
+# ---- Load Local Docs ----
 def load_docs(path="data/docs.jsonl"):
     docs = []
     try:
@@ -35,9 +37,8 @@ def tokenize(text):
 # ---- Build term frequencies ----
 DOC_TOKS = [tokenize(t) for t in TEXTS]
 DOC_COUNTS = [Counter(toks) for toks in DOC_TOKS]
-VOCAB = set(w for toks in DOC_TOKS for w in toks)
 
-# ---- Cosine similarity (count-based) ----
+# ---- Cosine similarity ----
 def cosine_sim(counter1, counter2):
     common = set(counter1.keys()) & set(counter2.keys())
     num = sum(counter1[w] * counter2[w] for w in common)
@@ -47,12 +48,10 @@ def cosine_sim(counter1, counter2):
         return 0.0
     return num / (denom1 * denom2)
 
-# ---- Retrieval ----
+# ---- Local Retrieval ----
 def retrieve_top_k(query, k=3):
-    logger.info(f"🔍 Retrieving top {k} docs for query='{query}'")
-    q_toks = tokenize(query)
-    q_count = Counter(q_toks)
-
+    logger.info(f"🔍 Retrieving top {k} docs (local) for query='{query}'")
+    q_count = Counter(tokenize(query))
     sims = [cosine_sim(q_count, d) for d in DOC_COUNTS]
     idx = sorted(range(len(sims)), key=lambda i: -sims[i])[:k]
 
@@ -62,3 +61,51 @@ def retrieve_top_k(query, k=3):
     ]
     logger.debug(f"Retrieved docs: {[r['id'] for r in results]}")
     return results
+
+# ---- PubMed Retrieval ----
+def retrieve_pubmed(query, k=3):
+    """Fetch top PubMed abstracts using Entrez API."""
+    logger.info(f"🌐 Retrieving top {k} PubMed docs for query='{query}'")
+
+    try:
+        # Search PubMed
+        search_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+        params = {
+            "db": "pubmed",
+            "term": query,
+            "retmax": k,
+            "retmode": "json",
+        }
+        if PUBMED_API_KEY:
+            params["api_key"] = PUBMED_API_KEY
+
+        search_res = requests.get(search_url, params=params, timeout=10).json()
+        ids = search_res["esearchresult"]["idlist"]
+
+        if not ids:
+            return []
+
+        # Fetch summaries
+        fetch_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+        params = {
+            "db": "pubmed",
+            "id": ",".join(ids),
+            "rettype": "abstract",
+            "retmode": "text",
+        }
+        fetch_res = requests.get(fetch_url, params=params, timeout=10).text
+
+        # Split abstracts
+        docs = []
+        for i, pid in enumerate(ids):
+            docs.append({
+                "id": f"pubmed_{pid}",
+                "text": f"PubMed ID {pid} abstract:\n{fetch_res}",
+                "score": 1.0,
+                "url": f"https://pubmed.ncbi.nlm.nih.gov/{pid}/"
+            })
+        return docs[:k]
+
+    except Exception as e:
+        logger.error(f"❌ PubMed retrieval failed: {e}")
+        return []

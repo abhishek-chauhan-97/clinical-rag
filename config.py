@@ -15,5 +15,7 @@ AVAILABLE_MODELS = [
     "gemini-1.5-pro"
 ]
 
+PUBMED_API_KEY = 2d1a62868ad65fd0b53063931cd567216a08
+
 # Default sources
 AVAILABLE_SOURCES = ["Local Docs", "PubMed", "Web Search"]
